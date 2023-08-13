@@ -6,34 +6,27 @@ import userRoutes from "./routes/user.js";
 const app = express();
 dotenv.config();
 
-mongoose
-  .connect(
-    `mongodb+srv://${process.env.MONGO_DB_USER}:${process.env.MONGO_DB_PASSWORD}@cluster0.k9brmiq.mongodb.net/${process.env.MONGO_DB_DATABASE}?retryWrites=true&w=majority`,
-    {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }
-  )
-  .then(() => {
-    console.log("Database connected");
-  })
-  .catch((err) => {
-    console.error("Error connecting to database:", err);
-  });
+// Database connection
+mongoose.connect(process.env.DB_URL, { useUnifiedTopology: true });
+const db = mongoose.connection;
 
-  app.get('/',(req,res)=>{
-    res.send("hello i am back")
-  })
+db.on('error', (error) => console.log(error));
+db.once('open', () => console.log("Connected to database!"));
 
-// Using json and urlencoded middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Using the userRoutes
-app.use("/api", userRoutes);
-app.post("/data", (res, req) => {});
+app.get('/', (req, res) => {
+  res.send("Hello, I am back");
+});
 
-// Use this to start the server or create the server to listen
+app.use("/api", userRoutes);
+
+app.post("/data", (req, res) => {
+  // Handle the POST request here
+  res.send("Data received successfully");
+});
+
 const port = process.env.PORT || 8000;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
